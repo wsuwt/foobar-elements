@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lion</title>
+  </head>
+  <body>
+    <style>
+      @font-face {
+        font-family: "Proxima Nova Fin";
+        font-style: normal;
+        font-weight: 400;
+        font-display: swap;
+        src: url("https://cdn.refinitiv.net/public/libs/elf/assets/elf-theme-halo/resources/fonts/proximanovafin/proximanovafin-regular.woff2")
+            format("woff2"),
+          url("https://cdn.refinitiv.net/public/libs/elf/assets/elf-theme-halo/resources/fonts/proximanovafin/proximanovafin-regular.woff")
+            format("woff");
+      }
+      @font-face {
+        font-family: "Proxima Nova Fin";
+        font-style: normal;
+        font-weight: 500 600;
+        font-display: swap;
+        src: url("https://cdn.refinitiv.net/public/libs/elf/assets/elf-theme-halo/resources/fonts/proximanovafin/proximanovafin-semibold.woff2")
+            format("woff2"),
+          url("https://cdn.refinitiv.net/public/libs/elf/assets/elf-theme-halo/resources/fonts/proximanovafin/proximanovafin-semibold.woff")
+            format("woff");
+      }
+      body {
+        color: #0d0d0d;
+        font-size: 12px;
+        line-height: 1.5;
+        font-family: "Proxima Nova Fin", Arial, "Helvetica Nue", Helvetica,
+          sans-serif;
+      }
+      section {
+        padding: 16px 0;
+        border-bottom: 1px solid lightgray;
+      }
+      foobar-checkbox {
+        margin-left: 3px;
+      }
+    </style>
+    <section>
+      <h3>Checkbox</h3>
+      <foobar-checkbox-group name="scientists[]" label="Favorite scientists">
+        <foobar-checkbox
+          label="Archimedes"
+          .choiceValue="Archimedes"
+        ></foobar-checkbox>
+        <foobar-checkbox label="Plato" .choiceValue="Plato"></foobar-checkbox>
+        <foobar-checkbox
+          label="Pythagoras"
+          .choiceValue="Pythagoras"
+          checked
+        ></foobar-checkbox>
+      </foobar-checkbox-group>
+    </section>
+    <section>
+      <h3>Combobox</h3>
+      <foobar-combobox label="Search" autocomplete="none">
+        <foobar-option choiceValue="Apple">Apple</foobar-option>
+        <foobar-option choiceValue="Orange">Orange</foobar-option>
+        <foobar-option choiceValue="Banana">Banana</foobar-option>
+      </foobar-combobox>
+      <foobar-combobox-demo></foobar-combobox-demo>
+    </section>
+    <section>
+      <h3>Switch</h3>
+      <foobar-switch label="On/Off"></foobar-switch>
+    </section>
+
+    <section>
+      <h3>Form</h3>
+      <foobar-form-demo></foobar-form-demo>
+    </section>
+    <script type="module" src="/src/index.ts"></script>
+    <script type="module">
+      import { html, LitElement } from "lit";
+
+      class ComboboxDemo extends LitElement {
+        submitHandler = (ev) => {
+          const formData = ev.target.serializedValue;
+          console.log("formData", formData);
+          fetch("/api/foo/", {
+            method: "POST",
+            body: JSON.stringify(formData),
+          });
+        };
+
+        render() {
+          return html`
+            <foobar-combobox name="combo" label="Search" autocomplete="list">
+              ${["Apple", "Orangee", "Banana"].map(
+                (entry, i) => html`
+                  <foobar-option .checked="${i === 0}" .choiceValue="${entry}"
+                    >${entry}</foobar-option
+                  >
+                `
+              )}
+            </foobar-combobox>
+          `;
+        }
+      }
+      customElements.define("foobar-combobox-demo", ComboboxDemo);
+    </script>
+    <script type="module">
+      import { html, LitElement } from "lit";
+      import { Required, MinLength } from "@lion/ui/form-core.js";
+      import { loadDefaultFeedbackMessages } from "@lion/ui/validate-messages.js";
+
+      class FormDemo extends LitElement {
+        render() {
+          loadDefaultFeedbackMessages();
+
+          const submitHandler = (ev) => {
+            console.log("serialized formData", ev.target.serializedValue);
+          };
+
+          return html`
+            <lion-form @submit=${submitHandler}>
+              <form @submit=${(ev) => ev.preventDefault()}>
+                <lion-input
+                  name="firstName"
+                  label="First Name"
+                  value="test"
+                ></lion-input>
+                <lion-input
+                  name="lastName"
+                  label="Last Name"
+                  .validators="${[new Required(), new MinLength(4)]}"
+                ></lion-input>
+
+                <foobar-checkbox-group
+                  name="scientists[]"
+                  label="Favorite scientists"
+                >
+                  <foobar-checkbox
+                    label="Archimedes"
+                    .choiceValue=${"Archimedes"}
+                  ></foobar-checkbox>
+                  <foobar-checkbox
+                    label="Plato"
+                    .choiceValue=${"Plato"}
+                  ></foobar-checkbox>
+                  <foobar-checkbox
+                    label="Pythagoras"
+                    .choiceValue=${"Pythagoras"}
+                    checked
+                  ></foobar-checkbox>
+                </foobar-checkbox-group>
+
+                <foobar-combobox name="fruits" label="Fruits" autocomplete="list">
+                  ${["Apple", "Orangee", "Banana"].map(
+                    (entry, i) => html`
+                      <foobar-option .choiceValue="${entry}"
+                        >${entry}</foobar-option
+                      >
+                    `
+                  )}
+                </foobar-combobox>
+
+                <foobar-switch name="light" label="Light On/Off"></foobar-switch>
+
+                <lion-button-submit>Lion Submit</lion-button-submit>
+                <lion-button-reset
+                  @click=${(ev) =>
+                    ev.currentTarget.parentElement.parentElement.resetGroup()}
+                  >Lion Reset</lion-button-reset
+                >
+
+                <button>Submit</button>
+                <button
+                  type="button"
+                  @click=${(ev) =>
+                    ev.currentTarget.parentElement.parentElement.resetGroup()}
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  @click=${(ev) =>
+                    ev.currentTarget.parentElement.parentElement.clearGroup()}
+                >
+                  Clear
+                </button>
+              </form>
+            </lion-form>
+          `;
+        }
+      }
+      customElements.define("foobar-form-demo", FormDemo);
+    </script>
+  </body>
+</html>
